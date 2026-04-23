@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Repair vs. Lease vs. Buy — 3-Year Cost Calculator</title>
+<style>
+:root{--bg:#ffffff;--bg2:#f5f5f4;--bg3:#ebebea;--text:#1a1a1a;--text2:#6b6b6b;--text3:#9a9a9a;--border:#e0e0de;--border2:#c8c8c5;--info-bg:#E6F1FB;--info-text:#185FA5;--info-border:#85B7EB;--success-bg:#EAF3DE;--success-text:#3B6D11;--success-border:#97C459;--danger-bg:#FCEBEB;--danger-text:#A32D2D;--danger-border:#F09595;--warn-bg:#FAEEDA;--warn-text:#854F0B;--warn-border:#EF9F27;--purple-bg:#EEEDFE;--purple-text:#534AB7;--purple-border:#AFA9EC;--radius:12px;--radius-sm:8px}
+@media(prefers-color-scheme:dark){:root{--bg:#1a1a1a;--bg2:#2c2c2a;--bg3:#3a3a38;--text:#e8e8e6;--text2:#a0a09c;--text3:#787874;--border:#3a3a38;--border2:#505050;--info-bg:#042C53;--info-text:#85B7EB;--info-border:#185FA5;--success-bg:#173404;--success-text:#97C459;--success-border:#3B6D11;--danger-bg:#501313;--danger-text:#F09595;--danger-border:#A32D2D;--warn-bg:#412402;--warn-text:#EF9F27;--warn-border:#854F0B;--purple-bg:#26215C;--purple-text:#AFA9EC;--purple-border:#534AB7}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg3);color:var(--text);line-height:1.6;padding:2rem 1rem}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:22px;font-weight:500;margin-bottom:4px}
+.subtitle{font-size:14px;color:var(--text2);margin-bottom:1.5rem}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+@media(max-width:800px){.row3{grid-template-columns:1fr}.row2{grid-template-columns:1fr}}
+.col-full{grid-column:1/-1}
+.panel{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem}
+.panel-title{font-weight:500;font-size:16px;margin:0 0 4px}
+.panel-sub{font-size:12px;color:var(--text3);margin:0 0 14px}
+.input-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.input-row:last-child{margin-bottom:0}
+.lbl{font-size:12px;color:var(--text2);min-width:120px;flex-shrink:0}
+.val{font-size:13px;font-weight:500;min-width:65px;text-align:right}
+input[type=range]{flex:1;height:5px;-webkit-appearance:none;appearance:none;background:var(--bg3);border-radius:3px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--bg)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--text);cursor:pointer;border:2px solid var(--bg)}
+.result-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:16px}
+@media(max-width:800px){.result-row{grid-template-columns:1fr}}
+.result-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;text-align:center;transition:all 0.2s}
+.result-card.winner{border:2px solid var(--success-border);background:var(--success-bg)}
+.rc-label{font-size:12px;color:var(--text2);margin:0}
+.rc-total{font-size:26px;font-weight:500;margin:6px 0 2px}
+.rc-monthly{font-size:13px;color:var(--text2);margin:0}
+.breakdown{margin-top:12px;text-align:left}
+.bd-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.bd-row:last-child{border-bottom:none;font-weight:500;padding-top:6px;font-size:13px}
+.bd-row.savings{color:var(--success-text)}
+.bd-label{color:var(--text2)}
+.bd-val{font-weight:500}
+.verdict-bar{margin-top:16px;border-radius:var(--radius);padding:1rem 1.25rem;text-align:center}
+.verdict-bar.best{background:var(--success-bg);border:1px solid var(--success-border)}
+.verdict-text{font-weight:500;font-size:16px;margin:0}
+.verdict-sub{font-size:13px;color:var(--text2);margin:4px 0 0}
+.note{font-size:12px;color:var(--text3);margin-top:20px;padding-top:12px;border-top:1px solid var(--border);line-height:1.5}
+.perk-tag{display:inline-block;font-size:10px;padding:2px 6px;border-radius:var(--radius-sm);background:var(--success-bg);color:var(--success-text);border:1px solid var(--success-border);margin-left:4px;vertical-align:middle}
+.toggle-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.toggle-row label{font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px}
+.toggle-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--info-text)}
+.perks-banner{background:var(--success-bg);border:1px solid var(--success-border);border-radius:var(--radius);padding:10px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.perks-banner-title{font-size:13px;font-weight:500;color:var(--success-text)}
+.perks-banner-item{font-size:11px;color:var(--success-text);background:var(--bg);border:1px solid var(--success-border);border-radius:var(--radius-sm);padding:2px 8px}
+.risk-section{margin-top:16px}
+.risk-card{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:var(--radius);padding:12px 16px;margin-bottom:8px}
+.risk-title{font-weight:500;font-size:13px;color:var(--warn-text);margin:0 0 2px}
+.risk-desc{font-size:12px;color:var(--text2);margin:0}
+.risk-cost{font-weight:500;font-size:12px;color:var(--warn-text);margin-top:2px}
+.sep{border-top:1px solid var(--border);margin:12px 0;padding-top:10px}
+.sep-label{font-size:11px;color:var(--text3);margin:0 0 8px}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Repair vs. lease vs. buy — 3-year cost calculator</h1>
+<p class="subtitle">2017 Tesla Model X 75D vs. Tesla Model Y (lease or finance)</p>
+
+<div class="perks-banner">
+<span class="perks-banner-title">Your Model X perks:</span>
+<span class="perks-banner-item">Free lifetime Supercharging</span>
+<span class="perks-banner-item">FSD included</span>
+<span class="perks-banner-item">WiFi included</span>
+</div>
+
+<div class="row3">
+
+<!-- COLUMN 1: REPAIR -->
+<div class="panel">
+<p class="panel-title">Repair Model X</p>
+<p class="panel-sub">Fix battery, keep your perks</p>
+<div class="input-row">
+<span class="lbl">Battery repair</span>
+<input type="range" min="8000" max="30000" step="500" value="20000" id="repairCost">
+<span class="val" id="repairCostVal">$20,000</span>
+</div>
+<div class="input-row">
+<span class="lbl">Insurance (mo)</span>
+<input type="range" min="100" max="400" step="10" value="250" id="repairIns">
+<span class="val" id="repairInsVal">$250</span>
+</div>
+<div class="input-row">
+<span class="lbl">Maintenance (yr)</span>
+<input type="range" min="200" max="5000" step="100" value="800" id="repairMaint">
+<span class="val" id="repairMaintVal">$800</span>
+</div>
+<div class="input-row">
+<span class="lbl">Repair risk (yr)</span>
+<input type="range" min="0" max="5000" step="250" value="1500" id="repairRisk">
+<span class="val" id="repairRiskVal">$1,500</span>
+</div>
+<div class="input-row">
+<span class="lbl">Resale after 3 yr</span>
+<input type="range" min="0" max="25000" step="500" value="12000" id="resale">
+<span class="val" id="resaleVal">$12,000</span>
+</div>
+<div class="input-row">
+<span class="lbl">Charging <span class="perk-tag">FREE</span></span>
+<span class="val" style="color:var(--success-text)">$0/mo</span>
+</div>
+<div class="input-row">
+<span class="lbl">FSD + WiFi <span class="perk-tag">FREE</span></span>
+<span class="val" style="color:var(--success-text)">$0/mo</span>
+</div>
+</div>
+
+<!-- COLUMN 2: LEASE MODEL Y -->
+<div class="panel">
+<p class="panel-title">Lease Model Y</p>
+<p class="panel-sub">36 mo, 10,000 mi/yr</p>
+<div class="input-row">
+<span class="lbl">Monthly payment</span>
+<input type="range" min="300" max="800" step="10" value="569" id="leaseMo">
+<span class="val" id="leaseMoVal">$569</span>
+</div>
+<div class="input-row">
+<span class="lbl">Due at signing</span>
+<input type="range" min="0" max="8000" step="250" value="3000" id="leaseDue">
+<span class="val" id="leaseDueVal">$3,000</span>
+</div>
+<div class="input-row">
+<span class="lbl">Insurance (mo)</span>
+<input type="range" min="100" max="500" step="10" value="280" id="leaseIns">
+<span class="val" id="leaseInsVal">$280</span>
+</div>
+<div class="input-row">
+<span class="lbl">Charging (mo)</span>
+<input type="range" min="0" max="200" step="5" value="80" id="leaseCharge">
+<span class="val" id="leaseChargeVal">$80</span>
+</div>
+<div class="sep">
+<p class="sep-label">Subscriptions (you had these free on Model X):</p>
+<div class="toggle-row">
+<label><input type="checkbox" id="leaseFSD" checked> FSD — $99/mo</label>
+</div>
+<div class="toggle-row">
+<label><input type="checkbox" id="leaseWifi" checked> WiFi — $10/mo</label>
+</div>
+</div>
+<div class="input-row">
+<span class="lbl">Mileage limit</span>
+<span class="val" style="color:var(--text2)">10,000/yr</span>
+</div>
+<div class="input-row">
+<span class="lbl">Overage fee</span>
+<span class="val" style="color:var(--text2)">$0.25/mi</span>
+</div>
+</div>
+
+<!-- COLUMN 3: BUY MODEL Y -->
+<div class="panel">
+<p class="panel-title">Buy Model Y</p>
+<p class="panel-sub">Finance @ 0.99% APR, 72 mo</p>
+<div class="input-row">
+<span class="lbl">Monthly payment</span>
+<input type="range" min="400" max="900" step="10" value="617" id="buyMo">
+<span class="val" id="buyMoVal">$617</span>
+</div>
+<div class="input-row">
+<span class="lbl">Down payment</span>
+<input type="range" min="0" max="10000" step="250" value="3300" id="buyDown">
+<span class="val" id="buyDownVal">$3,300</span>
+</div>
+<div class="input-row">
+<span class="lbl">Insurance (mo)</span>
+<input type="range" min="100" max="500" step="10" value="280" id="buyIns">
+<span class="val" id="buyInsVal">$280</span>
+</div>
+<div class="input-row">
+<span class="lbl">Charging (mo)</span>
+<input type="range" min="0" max="200" step="5" value="80" id="buyCharge">
+<span class="val" id="buyChargeVal">$80</span>
+</div>
+<div class="sep">
+<p class="sep-label">Subscriptions:</p>
+<div class="toggle-row">
+<label><input type="checkbox" id="buyFSD" checked> FSD — $99/mo</label>
+</div>
+<div class="toggle-row">
+<label><input type="checkbox" id="buyWifi" checked> WiFi — $10/mo</label>
+</div>
+</div>
+<div class="input-row">
+<span class="lbl">Resale after 3 yr</span>
+<input type="range" min="10000" max="40000" step="500" value="25000" id="buyResale">
+<span class="val" id="buyResaleVal">$25,000</span>
+</div>
+</div>
+
+</div>
+
+<!-- SHARED ASSUMPTIONS -->
+<div class="row2">
+<div class="panel col-full">
+<p class="panel-title" style="margin-bottom:12px">Shared assumptions</p>
+<div class="row2" style="margin-bottom:0">
+<div class="input-row">
+<span class="lbl">Your annual miles</span>
+<input type="range" min="5000" max="25000" step="1000" value="10000" id="annualMiles">
+<span class="val" id="annualMilesVal">10,000</span>
+</div>
+<div class="input-row">
+<span class="lbl">Supercharger rate</span>
+<input type="range" min="0.20" max="0.60" step="0.01" value="0.40" id="scRate">
+<span class="val" id="scRateVal">$0.40/kWh</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- RESULTS -->
+<div class="result-row">
+<div class="result-card" id="repairCard">
+<p class="rc-label">Repair Model X — 3-year cost</p>
+<p class="rc-total" id="repairTotal">$0</p>
+<p class="rc-monthly" id="repairMonthly">$0/mo effective</p>
+<div class="breakdown" id="repairBD"></div>
+</div>
+<div class="result-card" id="leaseCard">
+<p class="rc-label">Lease Model Y — 3-year cost</p>
+<p class="rc-total" id="leaseTotal">$0</p>
+<p class="rc-monthly" id="leaseMonthly">$0/mo effective</p>
+<div class="breakdown" id="leaseBD"></div>
+</div>
+<div class="result-card" id="buyCard">
+<p class="rc-label">Buy Model Y — 3-year net cost</p>
+<p class="rc-total" id="buyTotal">$0</p>
+<p class="rc-monthly" id="buyMonthly">$0/mo effective</p>
+<div class="breakdown" id="buyBD"></div>
+</div>
+</div>
+
+<div class="verdict-bar best" id="verdict">
+<p class="verdict-text" id="verdictText"></p>
+<p class="verdict-sub" id="verdictSub"></p>
+</div>
+
+<!-- RISK SECTION -->
+<div class="risk-section">
+<p style="font-weight:500;font-size:14px;margin:0 0 10px;color:var(--text2)">Model X repair risks (adjust "repair risk" slider above)</p>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<div class="risk-card">
+<p class="risk-title">Falcon wing doors</p>
+<p class="risk-desc">Actuators, sensors, seals — 2017 is the worst year for these.</p>
+<p class="risk-cost">$500 – $2,500 per door</p>
+</div>
+<div class="risk-card">
+<p class="risk-title">Air suspension</p>
+<p class="risk-desc">Control arms, ball joints, air springs wear prematurely.</p>
+<p class="risk-cost">$1,500 – $10,000</p>
+</div>
+<div class="risk-card">
+<p class="risk-title">MCU1 failure</p>
+<p class="risk-desc">eMMC flash degrades with age. Screen freezes, eventual failure.</p>
+<p class="risk-cost">$1,500 – $2,500</p>
+</div>
+<div class="risk-card">
+<p class="risk-title">12V battery + misc</p>
+<p class="risk-desc">Phantom drain, no-start, electronic gremlins on early builds.</p>
+<p class="risk-cost">$200 – $500</p>
+</div>
+</div>
+</div>
+
+<p class="note">Model X charging = $0 (lifetime free Supercharging). FSD ($99/mo) and WiFi ($10/mo) are included on your Model X but paid subscriptions on Model Y — toggle off if you don't want them. Buy option: 3-year cost = payments + down + insurance + charging + subscriptions minus estimated resale value (you still owe remaining loan balance of ~36 payments). Lease mileage limit: 10,000 mi/yr, $0.25/mi overage. This tool is for estimation only.</p>
+
+</div>
+
+<script>
+function fmt(n){return (n<0?'-':'')+'$'+Math.abs(Math.round(n)).toLocaleString()}
+function el(id){return document.getElementById(id)}
+
+function calc(){
+var months=36;
+
+var rc=+el('repairCost').value, ri=+el('repairIns').value, rm=+el('repairMaint').value;
+var rr=+el('repairRisk').value, rv=+el('resale').value;
+var am=+el('annualMiles').value, scr=+el('scRate').value;
+
+var lm=+el('leaseMo').value, ld=+el('leaseDue').value, li=+el('leaseIns').value, lch=+el('leaseCharge').value;
+var lfsd=el('leaseFSD').checked?99:0, lwifi=el('leaseWifi').checked?10:0;
+
+var bm=+el('buyMo').value, bd=+el('buyDown').value, bi=+el('buyIns').value, bch=+el('buyCharge').value;
+var bfsd=el('buyFSD').checked?99:0, bwifi=el('buyWifi').checked?10:0, brv=+el('buyResale').value;
+
+// Update display values
+el('repairCostVal').textContent=fmt(rc);
+el('repairInsVal').textContent=fmt(ri);
+el('repairMaintVal').textContent=fmt(rm);
+el('repairRiskVal').textContent=fmt(rr);
+el('resaleVal').textContent=fmt(rv);
+el('leaseMoVal').textContent=fmt(lm);
+el('leaseDueVal').textContent=fmt(ld);
+el('leaseInsVal').textContent=fmt(li);
+el('leaseChargeVal').textContent=fmt(lch);
+el('buyMoVal').textContent=fmt(bm);
+el('buyDownVal').textContent=fmt(bd);
+el('buyInsVal').textContent=fmt(bi);
+el('buyChargeVal').textContent=fmt(bch);
+el('buyResaleVal').textContent=fmt(brv);
+el('annualMilesVal').textContent=am.toLocaleString();
+el('scRateVal').textContent='$'+scr.toFixed(2)+'/kWh';
+
+// Free supercharging savings (what you'd pay without the perk)
+var scSavings=Math.round((am*3/2.8)*scr);
+var perkFsdWifi=(lfsd+lwifi)*months;
+
+// REPAIR calc
+var repairInsT=ri*months;
+var repairMaintT=rm*3;
+var repairRiskT=rr*3;
+var repairNet=rc+repairInsT+repairMaintT+repairRiskT-rv;
+
+// LEASE calc
+var leasePayT=lm*months;
+var leaseInsT=li*months;
+var leaseFsdT=lfsd*months;
+var leaseWifiT=lwifi*months;
+var leaseChargeT=lch*months;
+var leaseNet=ld+leasePayT+leaseInsT+leaseFsdT+leaseWifiT+leaseChargeT;
+
+// BUY calc (3-year window: 36 of 72 payments made, then subtract resale minus remaining loan)
+var buyPayT=bm*months;
+var buyInsT=bi*months;
+var buyFsdT=bfsd*months;
+var buyWifiT=bwifi*months;
+var buyChargeT=bch*months;
+var remainingLoan=bm*36; // 36 remaining payments on 72-mo loan
+var buyEquity=brv-remainingLoan;
+var buyGross=bd+buyPayT+buyInsT+buyFsdT+buyWifiT+buyChargeT;
+var buyNet=buyGross-Math.max(0,buyEquity);
+if(buyEquity<0) buyNet=buyGross+Math.abs(buyEquity);
+
+// Display totals
+el('repairTotal').textContent=fmt(repairNet);
+el('repairMonthly').textContent=fmt(Math.round(repairNet/months))+'/mo';
+el('leaseTotal').textContent=fmt(leaseNet);
+el('leaseMonthly').textContent=fmt(Math.round(leaseNet/months))+'/mo';
+el('buyTotal').textContent=fmt(buyNet);
+el('buyMonthly').textContent=fmt(Math.round(buyNet/months))+'/mo';
+
+// Breakdowns
+el('repairBD').innerHTML=
+'<div class="bd-row"><span class="bd-label">Battery repair</span><span class="bd-val">'+fmt(rc)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Insurance (36 mo)</span><span class="bd-val">'+fmt(repairInsT)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Maintenance (3 yr)</span><span class="bd-val">'+fmt(repairMaintT)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Repair risk (3 yr)</span><span class="bd-val">'+fmt(repairRiskT)+'</span></div>'+
+'<div class="bd-row savings"><span class="bd-label">Supercharging</span><span class="bd-val">$0 (saves '+fmt(scSavings)+')</span></div>'+
+'<div class="bd-row savings"><span class="bd-label">FSD + WiFi</span><span class="bd-val">$0 (saves '+fmt(perkFsdWifi)+')</span></div>'+
+'<div class="bd-row"><span class="bd-label">Resale credit</span><span class="bd-val">-'+fmt(rv)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Net 3-year cost</span><span class="bd-val">'+fmt(repairNet)+'</span></div>';
+
+el('leaseBD').innerHTML=
+'<div class="bd-row"><span class="bd-label">Due at signing</span><span class="bd-val">'+fmt(ld)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Payments (36 mo)</span><span class="bd-val">'+fmt(leasePayT)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Insurance (36 mo)</span><span class="bd-val">'+fmt(leaseInsT)+'</span></div>'+
+(leaseFsdT>0?'<div class="bd-row"><span class="bd-label">FSD (36 mo)</span><span class="bd-val">'+fmt(leaseFsdT)+'</span></div>':'')+
+(leaseWifiT>0?'<div class="bd-row"><span class="bd-label">WiFi (36 mo)</span><span class="bd-val">'+fmt(leaseWifiT)+'</span></div>':'')+
+'<div class="bd-row"><span class="bd-label">Charging (36 mo)</span><span class="bd-val">'+fmt(leaseChargeT)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Equity at end</span><span class="bd-val">$0 (return car)</span></div>'+
+'<div class="bd-row"><span class="bd-label">Net 3-year cost</span><span class="bd-val">'+fmt(leaseNet)+'</span></div>';
+
+el('buyBD').innerHTML=
+'<div class="bd-row"><span class="bd-label">Down payment</span><span class="bd-val">'+fmt(bd)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Payments (36 of 72)</span><span class="bd-val">'+fmt(buyPayT)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Insurance (36 mo)</span><span class="bd-val">'+fmt(buyInsT)+'</span></div>'+
+(buyFsdT>0?'<div class="bd-row"><span class="bd-label">FSD (36 mo)</span><span class="bd-val">'+fmt(buyFsdT)+'</span></div>':'')+
+(buyWifiT>0?'<div class="bd-row"><span class="bd-label">WiFi (36 mo)</span><span class="bd-val">'+fmt(buyWifiT)+'</span></div>':'')+
+'<div class="bd-row"><span class="bd-label">Charging (36 mo)</span><span class="bd-val">'+fmt(buyChargeT)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Resale value</span><span class="bd-val">'+fmt(brv)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Remaining loan</span><span class="bd-val">-'+fmt(remainingLoan)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Equity at 3 yr</span><span class="bd-val">'+fmt(buyEquity)+'</span></div>'+
+'<div class="bd-row"><span class="bd-label">Net 3-year cost</span><span class="bd-val">'+fmt(buyNet)+'</span></div>';
+
+// Determine winner
+var options=[{name:'Repairing the Model X',net:repairNet,id:'repairCard'},{name:'Leasing the Model Y',net:leaseNet,id:'leaseCard'},{name:'Buying the Model Y',net:buyNet,id:'buyCard'}];
+options.sort(function(a,b){return a.net-b.net});
+var best=options[0], second=options[1], third=options[2];
+var diff=second.net-best.net;
+
+document.querySelectorAll('.result-card').forEach(function(c){c.classList.remove('winner')});
+document.getElementById(best.id).classList.add('winner');
+
+var vt=el('verdictText');
+var vs=el('verdictSub');
+vt.textContent=best.name+' saves you '+fmt(diff)+' vs. next best option';
+
+var perkTotal=scSavings+perkFsdWifi;
+if(best.id==='repairCard'){
+vs.textContent="Your Model X perks (free Supercharging + FSD + WiFi) are worth "+fmt(perkTotal)+" over 3 years. You also keep the car.";
+}else if(best.id==='leaseCard'){
+vs.textContent="Even after losing "+fmt(perkTotal)+" in Model X perks. No repair risk, full warranty, walk away after 3 years.";
+}else{
+vs.textContent="Even after losing "+fmt(perkTotal)+" in Model X perks. You build "+fmt(Math.max(0,buyEquity))+" equity and own the car.";
+}
+}
+
+document.querySelectorAll('input[type=range]').forEach(function(e){e.addEventListener('input',calc)});
+['leaseFSD','leaseWifi','buyFSD','buyWifi'].forEach(function(id){el(id).addEventListener('change',calc)});
+calc();
+</script>
+</body>
+</html>
